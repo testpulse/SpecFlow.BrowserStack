@@ -10,7 +10,7 @@ function Get-SolutionConfigurations($solution)
 
 
 
-$frameworkDirs = @((Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\MSBuild\ToolsVersions\12.0" -Name "MSBuildToolsPath32")."MSBuildToolsPath32",
+$frameworkDirs = @((Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\MSBuild\ToolsVersions\14.0" -Name "MSBuildToolsPath32")."MSBuildToolsPath32",
 						"$env:windir\Microsoft.NET\Framework\v4.0.30319\")
 
     for ($i = 0; $i -lt $frameworkDirs.Count; $i++) {
