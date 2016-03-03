@@ -26,7 +26,7 @@ namespace SpecFlow.BrowserStack
 		public void WhenISearchTheWeb()
 		{
 			var q = _driver.FindElement(By.Name("q"));
-			q.SendKeys("Kenneth Truyers");
+			q.SendKeys("Nintex");
 			q.Submit();
 		}
 

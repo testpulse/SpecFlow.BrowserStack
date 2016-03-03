@@ -8,48 +8,62 @@ using TechTalk.SpecFlow;
 
 namespace SpecFlow.BrowserStack
 {
-	[Binding]
-	public class Setup
-	{
-		IWebDriver driver;
+    [Binding]
+    public class Setup
+    {
+        IWebDriver driver;
 
-		[BeforeScenario]
-		public void BeforeScenario()
-		{
-			if (Process.GetProcessesByName("BrowserStackLocal").Length == 0)
-				new Process
-				{
-					StartInfo = new ProcessStartInfo
-					{
-						FileName = "BrowserStackLocal.exe",
-						Arguments = ConfigurationManager.AppSettings["browserstack.key"] + " -forcelocal"
-					}
-				}.Start();
+        [BeforeTestRun]
+        public static void BeforeTestRun()
+        {
+            if (Process.GetProcessesByName("BrowserStackLocal").Length == 0)
+            {
+                new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "BrowserStackLocal.exe",
+                        Arguments = ConfigurationManager.AppSettings["browserstack.key"] + " -forcelocal"
+                    }
+                }.Start();
 
+                TestEnvironment.Current.Setup("TestWebApplication", "http://localhost:63064/");
 
-			var capabilities = new DesiredCapabilities();
+                // Wait BrowserStack Local ready
+                System.Threading.Thread.Sleep(15000);
+            }
+        } 
 
-			capabilities.SetCapability(CapabilityType.Version, ConfigurationManager.AppSettings["version"]);
-			capabilities.SetCapability("os", ConfigurationManager.AppSettings["os"]);
-			capabilities.SetCapability("os_version", ConfigurationManager.AppSettings["os_version"]);
-			capabilities.SetCapability("browserName", ConfigurationManager.AppSettings["browser"]);
-			
-			capabilities.SetCapability("browserstack.user", ConfigurationManager.AppSettings["browserstack.user"]);
-			capabilities.SetCapability("browserstack.key", ConfigurationManager.AppSettings["browserstack.key"]);
-			capabilities.SetCapability("browserstack.local", true);
-			
-			capabilities.SetCapability("project", "BrowserStack Demo");
-			capabilities.SetCapability("name", ScenarioContext.Current.ScenarioInfo.Title);
+        [BeforeScenario]
+        public void BeforeScenario()
+        {
+            
+            var capabilities = new DesiredCapabilities();
 
-			driver = new RemoteWebDriver(new Uri(ConfigurationManager.AppSettings["browserstack.hub"]), capabilities);
-			driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(1));
-			ScenarioContext.Current["driver"] = driver;
-		}
+            capabilities.SetCapability(CapabilityType.Version, ConfigurationManager.AppSettings["version"]);
+            capabilities.SetCapability("os", ConfigurationManager.AppSettings["os"]);
+            capabilities.SetCapability("os_version", ConfigurationManager.AppSettings["os_version"]);
+            capabilities.SetCapability("browserName", ConfigurationManager.AppSettings["browser"]);
+            
+            capabilities.SetCapability("browserstack.user", ConfigurationManager.AppSettings["browserstack.user"]);
+            capabilities.SetCapability("browserstack.key", ConfigurationManager.AppSettings["browserstack.key"]);
+            capabilities.SetCapability("browserstack.local", true);
 
-		[AfterScenario]
-		public void AfterScenario()
-		{
-			driver.Dispose();
-		}
-	}
+            //To enable visual logs browserstack.debug=true
+            capabilities.SetCapability("browserstack.debug", true);
+
+            capabilities.SetCapability("project", "BrowserStack Demo");
+            capabilities.SetCapability("name", ScenarioContext.Current.ScenarioInfo.Title);
+
+            driver = new RemoteWebDriver(new Uri(ConfigurationManager.AppSettings["browserstack.hub"]), capabilities);
+            driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(1));
+            ScenarioContext.Current["driver"] = driver;
+        }
+
+        [AfterScenario]
+        public void AfterScenario()
+        {
+            driver.Dispose();
+        }
+    }
 }

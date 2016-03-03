@@ -11,7 +11,7 @@ function Get-SolutionConfigurations($solution)
 
 
 $frameworkDirs = @((Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\MSBuild\ToolsVersions\14.0" -Name "MSBuildToolsPath32")."MSBuildToolsPath32",
-						"$env:windir\Microsoft.NET\Framework\v4.0.30319\")
+                        "$env:windir\Microsoft.NET\Framework\v4.0.30319\")
 
     for ($i = 0; $i -lt $frameworkDirs.Count; $i++) {
         $dir = $frameworkDirs[$i]
@@ -25,6 +25,7 @@ $frameworkDirs = @((Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\MSBuild\Too
 
     $env:path = ($frameworkDirs -join ";") + ";$env:path"
 
+Write-Host "Try building solution for different configurations..."
 @(Get-SolutionConfigurations $solution) | foreach {
     msbuild $solution /p:Configuration=$_ /nologo /verbosity:quiet
 }
@@ -32,13 +33,15 @@ $frameworkDirs = @((Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\MSBuild\Too
  
  New-Item "$(get-location)\packages\specflow.1.9.0\tools\specflow.exe.config" -type file -force -value "<?xml version=""1.0"" encoding=""utf-8"" ?> <configuration> <startup> <supportedRuntime version=""v4.0.30319"" /> </startup> </configuration>" | Out-Null
 
+
+ Write-Host "Executing the tests..."
 @(Get-SolutionConfigurations $solution)| foreach {
     Start-Job -ScriptBlock {
         param($configuration, $basePath)
 
         try
         {
-			& $basePath\packages\NUnit.Runners.2.6.4\tools\nunit-console.exe /labels /out=$basePath\nunit_$configuration.txt /xml:$basePath\nunit_$configuration.xml /nologo /config:$configuration "$basePath/SpecFlow.BrowserStack/bin/$configuration/SpecFlow.BrowserStack.dll"
+            & $basePath\packages\NUnit.Runners.2.6.4\tools\nunit-console.exe /labels /out=$basePath\nunit_$configuration.txt /xml:$basePath\nunit_$configuration.xml /nologo /config:$configuration "$basePath/SpecFlow.BrowserStack/bin/$configuration/SpecFlow.BrowserStack.dll"
         }
         finally
         {
