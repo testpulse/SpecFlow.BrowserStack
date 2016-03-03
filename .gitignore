@@ -1,5 +1,12 @@
 packages/
-SpecFlow.BrowserStack/bin/
-SpecFlow.BrowserStack/obj/
+bin/
+obj/
 *.user
 *.suo
+/.vs
+node_modules/
+
+#exclude test result file
+/nunit_*.txt
+/nunit_*.xml
+/specresult_*.html
